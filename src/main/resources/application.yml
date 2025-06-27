@@ -1,0 +1,237 @@
+# Week 1 Homework: Basic AI Text Responder Configuration
+# 
+# This configuration file demonstrates proper Spring Boot + Spring AI setup
+# with detailed explanations of each setting for educational purposes.
+
+# =============================================================================
+# APPLICATION CONFIGURATION
+# =============================================================================
+spring:
+  application:
+    name: week1-homework-text-responder
+    # WHY: Descriptive name helps with monitoring, logging, and service discovery
+    # IMPACT: Appears in logs, metrics, and Spring Boot Admin interfaces
+
+# =============================================================================
+# SERVER CONFIGURATION  
+# =============================================================================
+server:
+  port: 8080
+  # WHY: Standard Spring Boot default port - familiar to developers
+  # ALTERNATIVE: Use 0 for random port in testing, different ports for multiple services
+  # SECURITY: In production, consider running on non-standard ports behind a proxy
+
+# =============================================================================
+# SPRING AI - OPENAI CONFIGURATION
+# =============================================================================
+spring:
+  ai:
+    openai:
+      # API Key Configuration
+      api-key: ${OPENAI_API_KEY}
+      # WHY: Environment variable approach for security
+      # BENEFITS:
+      #   1. Keeps secrets out of source code
+      #   2. Allows different keys for dev/test/prod environments  
+      #   3. Follows 12-factor app principles
+      #   4. Enables easy key rotation without code changes
+      # SETUP: export OPENAI_API_KEY=your-key-here
+      
+      # Chat Model Configuration
+      chat:
+        options:
+          # Model Selection
+          model: ${OPENAI_MODEL:gpt-3.5-turbo}
+          # WHY gpt-3.5-turbo for Week 1?
+          #   1. COST-EFFECTIVE: ~10x cheaper than GPT-4 for learning exercises
+          #   2. FAST RESPONSES: Lower latency for interactive development  
+          #   3. SUFFICIENT CAPABILITY: Handles basic Q&A and text generation well
+          #   4. WIDE AVAILABILITY: Most OpenAI users have access to this model
+          # ALTERNATIVES: gpt-4 (higher quality), gpt-4-turbo (balance of speed/quality)
+          
+          # Creativity/Randomness Control
+          temperature: ${OPENAI_TEMPERATURE:0.7}
+          # WHY 0.7?
+          #   1. BALANCED CREATIVITY: Not too random (1.0) or deterministic (0.0)
+          #   2. CONSISTENT FOR LEARNING: Responses are reasonably predictable
+          #   3. GOOD FOR DEMOS: Interesting responses without wild unpredictability
+          #   4. INDUSTRY STANDARD: Common default for general-purpose applications
+          # RANGE: 0.0 (focused, deterministic) to 1.0 (creative, random)
+          
+          # Response Length Control  
+          max-tokens: ${OPENAI_MAX_TOKENS:150}
+          # WHY 150 tokens for Week 1?
+          #   1. COST CONTROL: Limits expense during development and testing
+          #   2. FOCUSED RESPONSES: Encourages concise, relevant answers
+          #   3. PERFORMANCE: Faster response times with shorter outputs
+          #   4. LEARNING: Students see complete responses without overwhelming detail
+          # NOTE: Will increase in later weeks as complexity grows
+          # ESTIMATION: ~150 tokens ≈ 100-120 words in English
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+logging:
+  level:
+    # Application-specific logging
+    com.coherentsolutions.homework.week1: DEBUG
+    # WHY DEBUG for homework package?
+    #   1. EDUCATIONAL: Students can see detailed application flow
+    #   2. DEBUGGING: Helps identify issues during development
+    #   3. MONITORING: Tracks request/response patterns
+    
+    # Spring AI logging  
+    org.springframework.ai: INFO
+    # WHY INFO level?
+    #   1. BALANCED: Shows important AI operations without spam
+    #   2. DEBUGGING: Helps understand Spring AI behavior
+    #   3. COST AWARENESS: Can track API call patterns
+    
+    # HTTP client logging (for debugging API calls)
+    org.springframework.web.client: DEBUG
+    # WHY DEBUG for web client?
+    #   1. API DEBUGGING: Shows HTTP requests/responses to OpenAI
+    #   2. TROUBLESHOOTING: Helps diagnose connectivity issues
+    #   3. LEARNING: Students can see actual API interactions
+    # WARNING: May log sensitive data - reduce in production
+    
+    # Root logging level
+    root: INFO
+    # WHY INFO as root?
+    #   1. CLEAN LOGS: Reduces noise from framework internals
+    #   2. PERFORMANCE: Less overhead than DEBUG everywhere
+    #   3. FOCUS: Highlights application-specific messages
+
+  # Log pattern for better readability
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    # COMPONENTS:
+    #   %d{HH:mm:ss.SSS} - Timestamp with milliseconds
+    #   [%thread] - Thread name for concurrent debugging
+    #   %-5level - Log level (ERROR, WARN, INFO, DEBUG)
+    #   %logger{36} - Logger name (truncated to 36 chars)
+    #   %msg%n - The actual log message with newline
+
+# =============================================================================
+# MANAGEMENT AND MONITORING (Optional for Week 1)
+# =============================================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+        # WHY enable health and info?
+        #   1. MONITORING: Check if application is running
+        #   2. DEBUGGING: Basic application information
+        #   3. OPERATIONS: Standard endpoints for deployment
+        # ACCESS: http://localhost:8080/actuator/health
+  
+  endpoint:
+    health:
+      show-details: when-authorized
+      # SECURITY: Only show detailed health info when authorized
+
+# =============================================================================
+# ENVIRONMENT-SPECIFIC OVERRIDES
+# =============================================================================
+# The following sections show how to override settings for different environments
+# Students can create application-dev.yml, application-test.yml, etc.
+
+---
+spring:
+  config:
+    activate:
+      on-profile: development
+      
+# Development-specific settings
+logging:
+  level:
+    com.coherentsolutions.homework.week1: DEBUG
+    org.springframework.ai: DEBUG
+    org.springframework.web.client: DEBUG
+
+spring:
+  ai:
+    openai:
+      chat:
+        options:
+          # More verbose responses in development
+          max-tokens: 300
+          # More creative responses for testing
+          temperature: 0.8
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+      
+# Test-specific settings  
+logging:
+  level:
+    root: WARN
+    com.coherentsolutions.homework.week1: INFO
+
+spring:
+  ai:
+    openai:
+      chat:
+        options:
+          # Shorter, more predictable responses for testing
+          max-tokens: 50
+          temperature: 0.3
+
+---
+spring:
+  config:
+    activate:
+      on-profile: production
+      
+# Production-specific settings
+logging:
+  level:
+    root: INFO
+    com.coherentsolutions.homework.week1: INFO
+    org.springframework.ai: WARN
+    org.springframework.web.client: WARN
+
+spring:
+  ai:
+    openai:
+      chat:
+        options:
+          # Production-optimized settings
+          max-tokens: 200
+          temperature: 0.6
+
+# =============================================================================
+# CONFIGURATION NOTES FOR STUDENTS
+# =============================================================================
+#
+# ENVIRONMENT VARIABLES TO SET:
+# export OPENAI_API_KEY=your-openai-api-key
+# export SPRING_PROFILES_ACTIVE=development  # Optional
+#
+# COST MANAGEMENT TIPS:
+# 1. Use gpt-3.5-turbo for development (much cheaper than GPT-4)
+# 2. Keep max-tokens reasonable to control costs
+# 3. Monitor your OpenAI usage dashboard regularly
+# 4. Consider using mocks for extensive testing
+#
+# SECURITY REMINDERS:
+# 1. Never commit API keys to version control
+# 2. Use environment variables for all secrets
+# 3. Rotate API keys regularly
+# 4. Monitor API usage for unauthorized access
+#
+# DEBUGGING TIPS:
+# 1. Enable DEBUG logging for your package during development
+# 2. Use management endpoints to check application health
+# 3. Monitor OpenAI API responses in logs (be careful not to log sensitive data)
+# 4. Use different profiles for different environments
+#
+# PERFORMANCE CONSIDERATIONS:
+# 1. Lower max-tokens = faster responses and lower costs
+# 2. Lower temperature = more predictable responses
+# 3. Consider caching for repeated prompts
+# 4. Monitor response times and adjust timeouts if needed
